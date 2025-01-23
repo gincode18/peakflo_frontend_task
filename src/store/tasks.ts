@@ -1,10 +1,10 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import type { Task, Status, BoardState } from "../types/task"
+import type { Task, Status, BoardState, Comment } from "../types/task"
 
 interface TaskState extends BoardState {
   tasks: Task[]
-  addTask: (task: Omit<Task, "id">) => void
+  addTask: (task: Omit<Task, "id" | "comments">) => void
   updateTask: (id: string, task: Partial<Task>) => void
   deleteTask: (id: string) => void
   moveTask: (taskId: string, newStatus: Status) => void
@@ -13,6 +13,10 @@ interface TaskState extends BoardState {
   updateColumn: (id: Status, title: string) => void
   deleteColumn: (id: Status) => void
   sortTasksByPriority: (columnId: Status) => void
+  addComment: (taskId: string, content: string) => void
+  deleteComment: (taskId: string, commentId: string) => void
+  exportBoard: () => string
+  importBoard: (data: string) => void
 }
 
 const defaultColumns: BoardState["columns"] = [
@@ -23,14 +27,15 @@ const defaultColumns: BoardState["columns"] = [
 
 export const useTaskStore = create<TaskState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       tasks: [],
       columns: defaultColumns,
       addTask: (task) =>
         set((state) => {
-          const newTask = {
+          const newTask: Task = {
             ...task,
             id: crypto.randomUUID(),
+            comments: [],
             priority: task.priority || "medium",
             dueDate: task.dueDate || null,
           }
@@ -119,6 +124,46 @@ export const useTaskStore = create<TaskState>()(
             columns: state.columns.map((col) => (col.id === columnId ? { ...col, tasks: sortedTasks } : col)),
           }
         }),
+      addComment: (taskId: string, content: string) =>
+        set((state) => {
+          const newComment: Comment = {
+            id: crypto.randomUUID(),
+            taskId,
+            content,
+            createdAt: new Date().toISOString(),
+          }
+          return {
+            tasks: state.tasks.map((task) =>
+              task.id === taskId ? { ...task, comments: [...task.comments, newComment] } : task,
+            ),
+          }
+        }),
+      deleteComment: (taskId: string, commentId: string) =>
+        set((state) => ({
+          tasks: state.tasks.map((task) =>
+            task.id === taskId
+              ? { ...task, comments: task.comments.filter((comment) => comment.id !== commentId) }
+              : task,
+          ),
+        })),
+      exportBoard: () => {
+        const state = get()
+        return JSON.stringify({
+          tasks: state.tasks,
+          columns: state.columns,
+        })
+      },
+      importBoard: (data: string) => {
+        try {
+          const parsedData = JSON.parse(data)
+          set({
+            tasks: parsedData.tasks,
+            columns: parsedData.columns,
+          })
+        } catch (error) {
+          console.error("Failed to import board data:", error)
+        }
+      },
     }),
     {
       name: "task-storage",

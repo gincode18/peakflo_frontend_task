@@ -4,14 +4,30 @@ import { useTaskStore } from "../store/tasks"
 import { Column } from "./column"
 import { NewColumnDialog } from "./new-column-dialog"
 import type { Status } from "../types/task"
-import { Container, Grid, Button, Box, TextField, InputAdornment, useTheme } from "@mui/material"
+import {
+  Container,
+  Grid,
+  Button,
+  Box,
+  TextField,
+  InputAdornment,
+  useTheme,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import SearchIcon from "@mui/icons-material/Search"
+import FileDownloadIcon from "@mui/icons-material/FileDownload"
+import FileUploadIcon from "@mui/icons-material/FileUpload"
 
 export default function TaskBoard() {
-  const { columns, reorderTasks } = useTaskStore()
+  const { columns, reorderTasks, exportBoard, importBoard } = useTaskStore()
   const [isNewColumnOpen, setIsNewColumnOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false)
+  const [importData, setImportData] = useState("")
   const theme = useTheme()
 
   const handleDragEnd = (result: DropResult) => {
@@ -42,6 +58,22 @@ export default function TaskBoard() {
         task.description.toLowerCase().includes(searchTerm.toLowerCase()),
     ),
   }))
+
+  const handleExport = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(exportBoard())
+    const downloadAnchorNode = document.createElement("a")
+    downloadAnchorNode.setAttribute("href", dataStr)
+    downloadAnchorNode.setAttribute("download", "kanban_board_export.json")
+    document.body.appendChild(downloadAnchorNode)
+    downloadAnchorNode.click()
+    downloadAnchorNode.remove()
+  }
+
+  const handleImport = () => {
+    importBoard(importData)
+    setIsImportDialogOpen(false)
+    setImportData("")
+  }
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -77,9 +109,17 @@ export default function TaskBoard() {
             },
           }}
         />
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setIsNewColumnOpen(true)}>
-          Add Column
-        </Button>
+        <Box>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setIsNewColumnOpen(true)} sx={{ mr: 1 }}>
+            Add Column
+          </Button>
+          <Button variant="outlined" startIcon={<FileDownloadIcon />} onClick={handleExport} sx={{ mr: 1 }}>
+            Export
+          </Button>
+          <Button variant="outlined" startIcon={<FileUploadIcon />} onClick={() => setIsImportDialogOpen(true)}>
+            Import
+          </Button>
+        </Box>
       </Box>
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="board" type="column" direction="horizontal">
@@ -102,6 +142,27 @@ export default function TaskBoard() {
         </Droppable>
       </DragDropContext>
       <NewColumnDialog open={isNewColumnOpen} onClose={() => setIsNewColumnOpen(false)} />
+      <Dialog open={isImportDialogOpen} onClose={() => setIsImportDialogOpen(false)}>
+        <DialogTitle>Import Board Data</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Paste JSON data here"
+            type="text"
+            fullWidth
+            multiline
+            rows={4}
+            variant="outlined"
+            value={importData}
+            onChange={(e) => setImportData(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsImportDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleImport}>Import</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   )
 }

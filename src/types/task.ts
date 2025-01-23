@@ -2,6 +2,13 @@ export type Status = string
 
 export type Priority = "low" | "medium" | "high"
 
+export interface Comment {
+  id: string
+  taskId: string
+  content: string
+  createdAt: string
+}
+
 export interface Task {
   id: string
   title: string
@@ -9,6 +16,7 @@ export interface Task {
   status: Status
   priority: Priority
   dueDate: string | null
+  comments: Comment[]
 }
 
 export interface Column {
