@@ -8,6 +8,7 @@ interface TaskState extends BoardState {
   updateTask: (id: string, task: Partial<Task>) => void
   deleteTask: (id: string) => void
   moveTask: (taskId: string, newStatus: Status) => void
+  reorderTasks: (sourceColId: Status, sourceIndex: number, destColId: Status, destIndex: number) => void
   addColumn: (title: string) => void
   updateColumn: (id: Status, title: string) => void
   deleteColumn: (id: Status) => void
@@ -65,6 +66,26 @@ export const useTaskStore = create<TaskState>()(
               ...column,
               tasks: newTasks.filter((t) => t.status === column.id),
             })),
+          }
+        }),
+      reorderTasks: (sourceColId, sourceIndex, destColId, destIndex) =>
+        set((state) => {
+          const newColumns = [...state.columns]
+          const sourceCol = newColumns.find((col) => col.id === sourceColId)
+          const destCol = newColumns.find((col) => col.id === destColId)
+
+          if (!sourceCol || !destCol) return state
+
+          const [movedTask] = sourceCol.tasks.splice(sourceIndex, 1)
+          destCol.tasks.splice(destIndex, 0, movedTask)
+
+          if (sourceColId !== destColId) {
+            movedTask.status = destColId
+          }
+
+          return {
+            columns: newColumns,
+            tasks: state.tasks.map((task) => (task.id === movedTask.id ? movedTask : task)),
           }
         }),
       addColumn: (title) =>
