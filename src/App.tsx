@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom"
 import { ThemeProvider, createTheme } from "@mui/material/styles"
 import CssBaseline from "@mui/material/CssBaseline"
-import TaskBoard from "./components/TaskBoard"
-// import TaskPage from "./components/TaskPage"
+import TaskBoard from "./components/task-board"
+import TaskPage from "./components/task-page"
 
 const theme = createTheme({
   palette: {
@@ -17,7 +17,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<TaskBoard />} />
-          {/* <Route path="/task/:id" element={<TaskPage />} /> */}
+          <Route path="/task/:id" element={<TaskPage />} />
         </Routes>
       </Router>
     </ThemeProvider>
