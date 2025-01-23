@@ -1,9 +1,14 @@
-import { useState } from "react"
-import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd"
-import { useTaskStore } from "../store/tasks"
-import { Column } from "./column"
-import { NewColumnDialog } from "./new-column-dialog"
-import type { Status } from "../types/task"
+import { useState } from "react";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  type DropResult,
+} from "@hello-pangea/dnd";
+import { useTaskStore } from "../store/tasks";
+import { Column } from "./column";
+import { NewColumnDialog } from "./new-column-dialog";
+import type { Status } from "../types/task";
 import {
   Container,
   Grid,
@@ -18,64 +23,73 @@ import {
   DialogActions,
   Typography,
   Fade,
-} from "@mui/material"
-import AddIcon from "@mui/icons-material/Add"
-import SearchIcon from "@mui/icons-material/Search"
-import FileDownloadIcon from "@mui/icons-material/FileDownload"
-import FileUploadIcon from "@mui/icons-material/FileUpload"
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import SearchIcon from "@mui/icons-material/Search";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
 
 export default function TaskBoard() {
-  const { columns, moveTask, reorderTasks, tasks, exportBoard, importBoard } = useTaskStore()
-  const [isNewColumnOpen, setIsNewColumnOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false)
-  const [importData, setImportData] = useState("")
-  const theme = useTheme()
+  const { columns, reorderTasks, exportBoard, importBoard } = useTaskStore();
+  const [isNewColumnOpen, setIsNewColumnOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [importData, setImportData] = useState("");
+  const theme = useTheme();
 
   const handleDragEnd = (result: DropResult) => {
-    const { destination, source, type } = result
+    const { destination, source, type } = result;
 
-    if (!destination) return
+    if (!destination) return;
 
     if (type === "column") {
-      const newColumns = Array.from(columns)
-      const [reorderedColumn] = newColumns.splice(source.index, 1)
-      newColumns.splice(destination.index, 0, reorderedColumn)
-      useTaskStore.setState({ columns: newColumns })
-      return
+      const newColumns = Array.from(columns);
+      const [reorderedColumn] = newColumns.splice(source.index, 1);
+      newColumns.splice(destination.index, 0, reorderedColumn);
+      useTaskStore.setState({ columns: newColumns });
+      return;
     }
 
-    if (destination.droppableId === source.droppableId && destination.index === source.index) {
-      return
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
     }
 
-    reorderTasks(source.droppableId as Status, source.index, destination.droppableId as Status, destination.index)
-  }
+    reorderTasks(
+      source.droppableId as Status,
+      source.index,
+      destination.droppableId as Status,
+      destination.index
+    );
+  };
 
   const filteredColumns = columns.map((column) => ({
     ...column,
     tasks: column.tasks.filter(
       (task) =>
         task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        task.description.toLowerCase().includes(searchTerm.toLowerCase()),
+        task.description.toLowerCase().includes(searchTerm.toLowerCase())
     ),
-  }))
+  }));
 
   const handleExport = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(exportBoard())
-    const downloadAnchorNode = document.createElement("a")
-    downloadAnchorNode.setAttribute("href", dataStr)
-    downloadAnchorNode.setAttribute("download", "kanban_board_export.json")
-    document.body.appendChild(downloadAnchorNode)
-    downloadAnchorNode.click()
-    downloadAnchorNode.remove()
-  }
+    const dataStr =
+      "data:text/json;charset=utf-8," + encodeURIComponent(exportBoard());
+    const downloadAnchorNode = document.createElement("a");
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "kanban_board_export.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
 
   const handleImport = () => {
-    importBoard(importData)
-    setIsImportDialogOpen(false)
-    setImportData("")
-  }
+    importBoard(importData);
+    setIsImportDialogOpen(false);
+    setImportData("");
+  };
 
   return (
     <Container maxWidth={false} sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
@@ -89,10 +103,21 @@ export default function TaskBoard() {
           gap: 2,
         }}
       >
-        <Typography variant="h4" component="h1" sx={{ fontWeight: "bold", color: theme.palette.primary.main }}>
+        <Typography
+          variant="h4"
+          component="h1"
+          sx={{ fontWeight: "bold", color: theme.palette.primary.main }}
+        >
           Kanban Board
         </Typography>
-        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
           <TextField
             placeholder="Search tasks"
             value={searchTerm}
@@ -109,10 +134,16 @@ export default function TaskBoard() {
               "& .MuiOutlinedInput-root": {
                 borderRadius: "20px",
                 "& fieldset": {
-                  borderColor: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.23)" : "rgba(0, 0, 0, 0.23)",
+                  borderColor:
+                    theme.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.23)"
+                      : "rgba(0, 0, 0, 0.23)",
                 },
                 "&:hover fieldset": {
-                  borderColor: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)",
+                  borderColor:
+                    theme.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.5)"
+                      : "rgba(0, 0, 0, 0.5)",
                 },
                 "&.Mui-focused fieldset": {
                   borderColor: theme.palette.primary.main,
@@ -155,13 +186,34 @@ export default function TaskBoard() {
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="board" type="column" direction="horizontal">
           {(provided) => (
-            <Grid container spacing={3} {...provided.droppableProps} ref={provided.innerRef}>
+            <Grid
+              container
+              spacing={3}
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+            >
               {filteredColumns.map((column, index) => (
-                <Draggable key={column.id} draggableId={column.id} index={index}>
+                <Draggable
+                  key={column.id}
+                  draggableId={column.id}
+                  index={index}
+                >
                   {(provided) => (
-                    <Grid item xs={12} md={6} lg={4} xl={3} {...provided.draggableProps} ref={provided.innerRef}>
+                    <Grid
+                      item
+                      xs={12}
+                      md={6}
+                      lg={4}
+                      xl={3}
+                      {...provided.draggableProps}
+                      ref={provided.innerRef}
+                    >
                       <div {...provided.dragHandleProps}>
-                        <Column id={column.id} title={column.title} tasks={column.tasks} />
+                        <Column
+                          id={column.id}
+                          title={column.title}
+                          tasks={column.tasks}
+                        />
                       </div>
                     </Grid>
                   )}
@@ -172,7 +224,10 @@ export default function TaskBoard() {
           )}
         </Droppable>
       </DragDropContext>
-      <NewColumnDialog open={isNewColumnOpen} onClose={() => setIsNewColumnOpen(false)} />
+      <NewColumnDialog
+        open={isNewColumnOpen}
+        onClose={() => setIsNewColumnOpen(false)}
+      />
       <Dialog
         open={isImportDialogOpen}
         onClose={() => setIsImportDialogOpen(false)}
@@ -202,6 +257,5 @@ export default function TaskBoard() {
         </DialogActions>
       </Dialog>
     </Container>
-  )
+  );
 }
-
