@@ -1,10 +1,10 @@
 import { useState } from "react"
 import { Droppable } from "@hello-pangea/dnd"
-import { Add, MoreVert } from "@mui/icons-material"
+import { Add, MoreVert, Sort } from "@mui/icons-material"
 import { TaskCard } from "./task-card"
 import { useTaskStore } from "../store/tasks"
 import type { Task, Status } from "../types/task"
-import { Paper, Typography, Button, Box, IconButton, Menu, MenuItem } from "@mui/material"
+import { Paper, Typography, Button, Box, IconButton, Menu, MenuItem, useTheme } from "@mui/material"
 import { NewTaskDialog } from "./new-task-dialog"
 
 interface ColumnProps {
@@ -17,6 +17,7 @@ export function Column({ id, title, tasks }: ColumnProps) {
   const [isNewTaskOpen, setIsNewTaskOpen] = useState(false)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const { updateColumn, deleteColumn } = useTaskStore()
+  const theme = useTheme()
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget)
@@ -42,7 +43,15 @@ export function Column({ id, title, tasks }: ColumnProps) {
   }
 
   return (
-    <Paper elevation={3} sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+    <Paper
+      elevation={3}
+      sx={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: theme.palette.background.paper,
+      }}
+    >
       <Box sx={{ p: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <Typography variant="h6" component="div">
           {title}{" "}
@@ -50,9 +59,14 @@ export function Column({ id, title, tasks }: ColumnProps) {
             ({tasks.length})
           </Typography>
         </Typography>
-        <IconButton onClick={handleMenuOpen}>
-          <MoreVert />
-        </IconButton>
+        <Box>
+          <IconButton onClick={() => useTaskStore.getState().sortTasksByPriority(id)} title="Sort by priority">
+            <Sort />
+          </IconButton>
+          <IconButton onClick={handleMenuOpen}>
+            <MoreVert />
+          </IconButton>
+        </Box>
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
           <MenuItem onClick={handleEditColumn}>Edit</MenuItem>
           <MenuItem onClick={handleDeleteColumn}>Delete</MenuItem>
@@ -75,7 +89,20 @@ export function Column({ id, title, tasks }: ColumnProps) {
         )}
       </Droppable>
       <Box sx={{ p: 2 }}>
-        <Button startIcon={<Add />} fullWidth onClick={() => setIsNewTaskOpen(true)} variant="outlined">
+        <Button
+          startIcon={<Add />}
+          fullWidth
+          onClick={() => setIsNewTaskOpen(true)}
+          variant="outlined"
+          sx={{
+            borderColor: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.23)" : "rgba(0, 0, 0, 0.23)",
+            color: theme.palette.text.primary,
+            "&:hover": {
+              borderColor: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)",
+              bgcolor: theme.palette.action.hover,
+            },
+          }}
+        >
           Add Task
         </Button>
       </Box>

@@ -12,6 +12,7 @@ interface TaskState extends BoardState {
   addColumn: (title: string) => void
   updateColumn: (id: Status, title: string) => void
   deleteColumn: (id: Status) => void
+  sortTasksByPriority: (columnId: Status) => void
 }
 
 const defaultColumns: BoardState["columns"] = [
@@ -27,7 +28,12 @@ export const useTaskStore = create<TaskState>()(
       columns: defaultColumns,
       addTask: (task) =>
         set((state) => {
-          const newTask = { ...task, id: crypto.randomUUID() }
+          const newTask = {
+            ...task,
+            id: crypto.randomUUID(),
+            priority: task.priority || "medium",
+            dueDate: task.dueDate || null,
+          }
           return {
             tasks: [...state.tasks, newTask],
             columns: state.columns.map((column) =>
@@ -101,6 +107,18 @@ export const useTaskStore = create<TaskState>()(
           tasks: state.tasks.filter((task) => task.status !== id),
           columns: state.columns.filter((column) => column.id !== id),
         })),
+      sortTasksByPriority: (columnId: Status) =>
+        set((state) => {
+          const column = state.columns.find((col) => col.id === columnId)
+          if (!column) return state
+
+          const priorityOrder = { high: 0, medium: 1, low: 2 }
+          const sortedTasks = [...column.tasks].sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority])
+
+          return {
+            columns: state.columns.map((col) => (col.id === columnId ? { ...col, tasks: sortedTasks } : col)),
+          }
+        }),
     }),
     {
       name: "task-storage",
