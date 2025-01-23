@@ -13,7 +13,7 @@ This Kanban board application is a modern, feature-rich task management tool bui
 *Application in dark mode*
 
 ## Demo Video
-[![Kanban Board Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+[![Kanban Board Demo](https://img.youtube.com/vi/Fa_Kb9UIxT0/0.jpg)](https://youtu.be/Fa_Kb9UIxT0)
 
 *Click the image above to watch a full demonstration of the Kanban Board application*
 
