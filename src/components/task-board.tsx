@@ -21,7 +21,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Typography,
   Fade,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -103,13 +102,6 @@ export default function TaskBoard() {
           gap: 2,
         }}
       >
-        <Typography
-          variant="h4"
-          component="h1"
-          sx={{ fontWeight: "bold", color: theme.palette.primary.main }}
-        >
-          Kanban Board
-        </Typography>
         <Box
           sx={{
             display: "flex",

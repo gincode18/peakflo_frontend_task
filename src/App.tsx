@@ -51,9 +51,13 @@ function App() {
       <CssBaseline />
       <AppBar position="static" color="default" elevation={0}>
         <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Kanban Board
-          </Typography>
+        <Typography
+          variant="h4"
+          component="h1"
+          sx={{ fontWeight: "bold", color: theme.palette.primary.main ,flexGrow: 1 }}
+        >
+          Kanban Board
+        </Typography>
           <IconButton color="inherit" onClick={toggleTheme}>
             {isDarkMode ? <Brightness7Icon /> : <Brightness4Icon />}
           </IconButton>
