@@ -21,7 +21,6 @@ This Kanban board application is a modern, feature-rich task management tool bui
 🔗 [Live Demo on Vercel](https://peakflo-frontend-task.vercel.app/)
 
 ## Technologies and Tools Used
-- **Next.js**: React framework for building the application
 - **React**: JavaScript library for building user interfaces
 - **TypeScript**: Superset of JavaScript that adds static types
 - **Material-UI (MUI)**: React UI framework for designing the interface
@@ -44,12 +43,12 @@ This Kanban board application is a modern, feature-rich task management tool bui
 ## Setup and Installation
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/kanban-board-app.git
-```
+git clone https://github.com/gincode18/peakflo_frontend_task
+``
 
 2. Navigate to the project directory:
 ```bash
-cd kanban-board-app
+cd peakflo_frontend_task
 ```
 
 3. Install dependencies:
