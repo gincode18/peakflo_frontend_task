@@ -4,7 +4,21 @@ import { Add, MoreVert, Sort } from "@mui/icons-material"
 import { TaskCard } from "./task-card"
 import { useTaskStore } from "../store/tasks"
 import type { Task, Status } from "../types/task"
-import { Paper, Typography, Button, Box, IconButton, Menu, MenuItem, useTheme } from "@mui/material"
+import {
+  Paper,
+  Typography,
+  Button,
+  Box,
+  IconButton,
+  Menu,
+  MenuItem,
+  useTheme,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Fade,
+} from "@mui/material"
 import { NewTaskDialog } from "./new-task-dialog"
 
 interface ColumnProps {
@@ -16,7 +30,8 @@ interface ColumnProps {
 export function Column({ id, title, tasks }: ColumnProps) {
   const [isNewTaskOpen, setIsNewTaskOpen] = useState(false)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const { updateColumn, deleteColumn } = useTaskStore()
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const { updateColumn, deleteColumn, sortTasksByPriority } = useTaskStore()
   const theme = useTheme()
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -36,10 +51,8 @@ export function Column({ id, title, tasks }: ColumnProps) {
   }
 
   const handleDeleteColumn = () => {
-    if (window.confirm("Are you sure you want to delete this column?")) {
-      deleteColumn(id)
-    }
-    handleMenuClose()
+    deleteColumn(id)
+    setIsDeleteDialogOpen(false)
   }
 
   return (
@@ -50,26 +63,36 @@ export function Column({ id, title, tasks }: ColumnProps) {
         display: "flex",
         flexDirection: "column",
         bgcolor: theme.palette.background.paper,
+        borderRadius: "16px",
+        overflow: "hidden",
       }}
     >
-      <Box sx={{ p: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Typography variant="h6" component="div">
+      <Box
+        sx={{
+          p: 2,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        <Typography variant="h6" component="div" sx={{ fontWeight: "bold" }}>
           {title}{" "}
           <Typography component="span" color="text.secondary">
             ({tasks.length})
           </Typography>
         </Typography>
         <Box>
-          <IconButton onClick={() => useTaskStore.getState().sortTasksByPriority(id)} title="Sort by priority">
+          <IconButton onClick={() => sortTasksByPriority(id)} title="Sort by priority" size="small">
             <Sort />
           </IconButton>
-          <IconButton onClick={handleMenuOpen}>
+          <IconButton onClick={handleMenuOpen} size="small">
             <MoreVert />
           </IconButton>
         </Box>
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
           <MenuItem onClick={handleEditColumn}>Edit</MenuItem>
-          <MenuItem onClick={handleDeleteColumn}>Delete</MenuItem>
+          <MenuItem onClick={() => setIsDeleteDialogOpen(true)}>Delete</MenuItem>
         </Menu>
       </Box>
       <Droppable droppableId={id}>
@@ -77,10 +100,10 @@ export function Column({ id, title, tasks }: ColumnProps) {
           <Box
             ref={provided.innerRef}
             {...provided.droppableProps}
-            sx={{ flexGrow: 1, overflowY: "auto", px: 2, pb: 2 }}
+            sx={{ flexGrow: 1, overflowY: "auto", px: 2, py: 1 }}
           >
             {tasks.map((task, index) => (
-              <Box key={task.id} sx={{ mb: 1 }}>
+              <Box key={task.id} sx={{ mb: 2 }}>
                 <TaskCard task={task} index={index} />
               </Box>
             ))}
@@ -88,7 +111,7 @@ export function Column({ id, title, tasks }: ColumnProps) {
           </Box>
         )}
       </Droppable>
-      <Box sx={{ p: 2 }}>
+      <Box sx={{ p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
         <Button
           startIcon={<Add />}
           fullWidth
@@ -101,12 +124,28 @@ export function Column({ id, title, tasks }: ColumnProps) {
               borderColor: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)",
               bgcolor: theme.palette.action.hover,
             },
+            borderRadius: "20px",
           }}
         >
           Add Task
         </Button>
       </Box>
       <NewTaskDialog status={id} open={isNewTaskOpen} onClose={() => setIsNewTaskOpen(false)} />
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        TransitionComponent={Fade}
+        transitionDuration={300}
+      >
+        <DialogTitle>Delete Column</DialogTitle>
+        <DialogContent>Are you sure you want to delete this column? This action cannot be undone.</DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleDeleteColumn} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   )
 }

@@ -16,6 +16,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Typography,
+  Fade,
 } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import SearchIcon from "@mui/icons-material/Search"
@@ -23,7 +25,7 @@ import FileDownloadIcon from "@mui/icons-material/FileDownload"
 import FileUploadIcon from "@mui/icons-material/FileUpload"
 
 export default function TaskBoard() {
-  const { columns, reorderTasks, exportBoard, importBoard } = useTaskStore()
+  const { columns, moveTask, reorderTasks, tasks, exportBoard, importBoard } = useTaskStore()
   const [isNewColumnOpen, setIsNewColumnOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false)
@@ -76,47 +78,76 @@ export default function TaskBoard() {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-        <TextField
-          placeholder="Search tasks"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.23)" : "rgba(0, 0, 0, 0.23)",
+    <Container maxWidth={false} sx={{ py: 4, px: { xs: 2, sm: 3 } }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 4,
+          gap: 2,
+        }}
+      >
+        <Typography variant="h4" component="h1" sx={{ fontWeight: "bold", color: theme.palette.primary.main }}>
+          Kanban Board
+        </Typography>
+        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
+          <TextField
+            placeholder="Search tasks"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              minWidth: 200,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "20px",
+                "& fieldset": {
+                  borderColor: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.23)" : "rgba(0, 0, 0, 0.23)",
+                },
+                "&:hover fieldset": {
+                  borderColor: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: theme.palette.primary.main,
+                },
               },
-              "&:hover fieldset": {
-                borderColor: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)",
+              "& .MuiInputBase-input": {
+                color: theme.palette.text.primary,
               },
-              "&.Mui-focused fieldset": {
-                borderColor: theme.palette.primary.main,
+              "& .MuiInputAdornment-root .MuiSvgIcon-root": {
+                color: theme.palette.text.secondary,
               },
-            },
-            "& .MuiInputBase-input": {
-              color: theme.palette.text.primary,
-            },
-            "& .MuiInputAdornment-root .MuiSvgIcon-root": {
-              color: theme.palette.text.secondary,
-            },
-          }}
-        />
-        <Box>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setIsNewColumnOpen(true)} sx={{ mr: 1 }}>
+            }}
+          />
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setIsNewColumnOpen(true)}
+            sx={{ borderRadius: "20px" }}
+          >
             Add Column
           </Button>
-          <Button variant="outlined" startIcon={<FileDownloadIcon />} onClick={handleExport} sx={{ mr: 1 }}>
+          <Button
+            variant="outlined"
+            startIcon={<FileDownloadIcon />}
+            onClick={handleExport}
+            sx={{ borderRadius: "20px" }}
+          >
             Export
           </Button>
-          <Button variant="outlined" startIcon={<FileUploadIcon />} onClick={() => setIsImportDialogOpen(true)}>
+          <Button
+            variant="outlined"
+            startIcon={<FileUploadIcon />}
+            onClick={() => setIsImportDialogOpen(true)}
+            sx={{ borderRadius: "20px" }}
+          >
             Import
           </Button>
         </Box>
@@ -124,11 +155,11 @@ export default function TaskBoard() {
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="board" type="column" direction="horizontal">
           {(provided) => (
-            <Grid container spacing={2} {...provided.droppableProps} ref={provided.innerRef}>
+            <Grid container spacing={3} {...provided.droppableProps} ref={provided.innerRef}>
               {filteredColumns.map((column, index) => (
                 <Draggable key={column.id} draggableId={column.id} index={index}>
                   {(provided) => (
-                    <Grid item xs={12} md={4} lg={3} {...provided.draggableProps} ref={provided.innerRef}>
+                    <Grid item xs={12} md={6} lg={4} xl={3} {...provided.draggableProps} ref={provided.innerRef}>
                       <div {...provided.dragHandleProps}>
                         <Column id={column.id} title={column.title} tasks={column.tasks} />
                       </div>
@@ -142,7 +173,12 @@ export default function TaskBoard() {
         </Droppable>
       </DragDropContext>
       <NewColumnDialog open={isNewColumnOpen} onClose={() => setIsNewColumnOpen(false)} />
-      <Dialog open={isImportDialogOpen} onClose={() => setIsImportDialogOpen(false)}>
+      <Dialog
+        open={isImportDialogOpen}
+        onClose={() => setIsImportDialogOpen(false)}
+        TransitionComponent={Fade}
+        transitionDuration={300}
+      >
         <DialogTitle>Import Board Data</DialogTitle>
         <DialogContent>
           <TextField
@@ -160,7 +196,9 @@ export default function TaskBoard() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsImportDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleImport}>Import</Button>
+          <Button onClick={handleImport} variant="contained">
+            Import
+          </Button>
         </DialogActions>
       </Dialog>
     </Container>

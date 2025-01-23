@@ -1,5 +1,4 @@
-"use client";
-
+import { useState } from "react";
 import { useTaskStore } from "../store/tasks";
 import type { Status, Priority } from "../types/task";
 import {
@@ -15,6 +14,11 @@ import {
   FormControl,
   InputLabel,
   Select,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Fade,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -29,22 +33,22 @@ export default function TaskPage() {
   const navigate = useNavigate();
   const { tasks, columns, updateTask, deleteTask } = useTaskStore();
   const task = tasks.find((t) => t.id === params.id);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   if (!task) {
     return <Typography variant="h6">Task not found</Typography>;
   }
 
   const handleDelete = () => {
-    if (window.confirm("Are you sure you want to delete this task?")) {
-      deleteTask(task.id);
-      navigate("/");
-    }
+    deleteTask(task.id);
+    navigate("/");
   };
 
   return (
+    <>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <Container maxWidth="md" sx={{ py: 8 }}>
-          <Paper elevation={3} sx={{ p: 4 }}>
+          <Paper elevation={3} sx={{ p: 4, borderRadius: "16px" }}>
             <Stack spacing={3}>
               <Box
                 sx={{
@@ -53,7 +57,11 @@ export default function TaskPage() {
                   alignItems: "center",
                 }}
               >
-                <Typography variant="h4" gutterBottom>
+                <Typography
+                  variant="h4"
+                  gutterBottom
+                  sx={{ fontWeight: "bold" }}
+                >
                   Task Details
                 </Typography>
                 <Chip label={task.status} color="primary" />
@@ -65,22 +73,22 @@ export default function TaskPage() {
                 fullWidth
                 variant="outlined"
               />
-              <TextField
-                select
-                label="Status"
-                value={task.status}
-                onChange={(e) =>
-                  updateTask(task.id, { status: e.target.value as Status })
-                }
-                fullWidth
-                variant="outlined"
-              >
-                {columns.map((column) => (
-                  <MenuItem key={column.id} value={column.id}>
-                    {column.title}
-                  </MenuItem>
-                ))}
-              </TextField>
+              <FormControl fullWidth>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={task.status}
+                  onChange={(e) =>
+                    updateTask(task.id, { status: e.target.value as Status })
+                  }
+                  label="Status"
+                >
+                  {columns.map((column) => (
+                    <MenuItem key={column.id} value={column.id}>
+                      {column.title}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
               <TextField
                 label="Description"
                 value={task.description}
@@ -124,6 +132,7 @@ export default function TaskPage() {
                   variant="outlined"
                   startIcon={<ArrowBackIcon />}
                   onClick={() => navigate("/")}
+                  sx={{ borderRadius: "20px" }}
                 >
                   Back to Board
                 </Button>
@@ -131,7 +140,8 @@ export default function TaskPage() {
                   variant="contained"
                   color="error"
                   startIcon={<DeleteIcon />}
-                  onClick={handleDelete}
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  sx={{ borderRadius: "20px" }}
                 >
                   Delete Task
                 </Button>
@@ -140,5 +150,24 @@ export default function TaskPage() {
           </Paper>
         </Container>
       </LocalizationProvider>
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        TransitionComponent={Fade}
+        transitionDuration={300}
+      >
+        <DialogTitle>Delete Task</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete this task? This action cannot be
+          undone.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleDelete} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
