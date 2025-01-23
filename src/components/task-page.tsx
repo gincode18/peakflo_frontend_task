@@ -12,8 +12,6 @@ import {
   Box,
   Typography,
   Chip,
-  ThemeProvider,
-  CssBaseline,
   FormControl,
   InputLabel,
   Select,
@@ -41,14 +39,6 @@ export default function TaskPage() {
       deleteTask(task.id);
       navigate("/");
     }
-  };
-
-  const theme = {
-    palette: {
-      primary: {
-        main: "#1976d2",
-      },
-    },
   };
 
   return (
