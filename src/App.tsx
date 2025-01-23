@@ -18,17 +18,34 @@ import { useEffect, useState } from "react";
 
 
 function App() {
-  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-  const [isDarkMode, setIsDarkMode] = useState(prefersDarkMode);
-  const theme = isDarkMode ? darkTheme : lightTheme;
+  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)")
+  const [isDarkMode, setIsDarkMode] = useState<boolean | null>(null)
 
   useEffect(() => {
-    setIsDarkMode(prefersDarkMode);
-  }, [prefersDarkMode]);
+    const storedTheme = localStorage.getItem("theme")
+    if (storedTheme) {
+      setIsDarkMode(storedTheme === "dark")
+    } else {
+      setIsDarkMode(prefersDarkMode)
+    }
+  }, [prefersDarkMode])
+
+  useEffect(() => {
+    if (isDarkMode !== null) {
+      localStorage.setItem("theme", isDarkMode ? "dark" : "light")
+    }
+  }, [isDarkMode])
+
+  const theme = isDarkMode ? darkTheme : lightTheme
 
   const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
+    setIsDarkMode(!isDarkMode)
+  }
+
+  // Prevent flash of unstyled content
+  if (isDarkMode === null) {
+    return null
+  }
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />

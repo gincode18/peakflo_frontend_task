@@ -9,13 +9,13 @@ import AddIcon from "@mui/icons-material/Add"
 import SearchIcon from "@mui/icons-material/Search"
 
 export default function TaskBoard() {
-  const { columns, moveTask, reorderTasks, tasks } = useTaskStore()
+  const { columns, reorderTasks } = useTaskStore()
   const [isNewColumnOpen, setIsNewColumnOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const theme = useTheme()
 
   const handleDragEnd = (result: DropResult) => {
-    const { destination, source, draggableId, type } = result
+    const { destination, source, type } = result
 
     if (!destination) return
 
