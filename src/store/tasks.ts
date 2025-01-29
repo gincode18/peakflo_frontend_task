@@ -79,26 +79,35 @@ export const useTaskStore = create<TaskState>()(
             })),
           }
         }),
-      reorderTasks: (sourceColId, sourceIndex, destColId, destIndex) =>
-        set((state) => {
-          const newColumns = [...state.columns]
-          const sourceCol = newColumns.find((col) => col.id === sourceColId)
-          const destCol = newColumns.find((col) => col.id === destColId)
+          // Start of Selection
+          reorderTasks: (sourceColId, sourceIndex, destColId, destIndex) =>
+            set((state) => {
+              // Create a shallow copy of the columns array to avoid mutating the state directly
+              const newColumns = [...state.columns]
+              // Find the source column by ID
+              const sourceCol = newColumns.find((col) => col.id === sourceColId)
+              // Find the destination column by ID
+              const destCol = newColumns.find((col) => col.id === destColId)
 
-          if (!sourceCol || !destCol) return state
+              // If either the source or destination column doesn't exist, do not proceed with the update
+              if (!sourceCol || !destCol) return state
 
-          const [movedTask] = sourceCol.tasks.splice(sourceIndex, 1)
-          destCol.tasks.splice(destIndex, 0, movedTask)
+              // Remove the task from the source column's tasks array at the specified source index
+              const [movedTask] = sourceCol.tasks.splice(sourceIndex, 1)
+              // Insert the task into the destination column's tasks array at the specified destination index
+              destCol.tasks.splice(destIndex, 0, movedTask)
 
-          if (sourceColId !== destColId) {
-            movedTask.status = destColId
-          }
+              // If the task is moved to a different column, update its status to the destination column's ID
+              if (sourceColId !== destColId) {
+                movedTask.status = destColId
+              }
 
-          return {
-            columns: newColumns,
-            tasks: state.tasks.map((task) => (task.id === movedTask.id ? movedTask : task)),
-          }
-        }),
+              // Update the state with the new columns and update the tasks array with the moved task's updated status
+              return {
+                columns: newColumns,
+                tasks: state.tasks.map((task) => (task.id === movedTask.id ? movedTask : task)),
+              }
+            }),
       addColumn: (title) =>
         set((state) => ({
           columns: [...state.columns, { id: title.toLowerCase().replace(/\s+/g, "-"), title, tasks: [] }],

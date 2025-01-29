@@ -36,19 +36,34 @@ export default function TaskBoard() {
   const [importData, setImportData] = useState("");
   const theme = useTheme();
 
+  /**
+   * Handles the end of a drag event.
+   * Depending on what was dragged (a column or a task), it updates the state accordingly.
+   * @param result - The result object containing information about the drag event.
+   */
   const handleDragEnd = (result: DropResult) => {
     const { destination, source, type } = result;
 
+    // If there's no destination (e.g., dropped outside the list), do nothing.
     if (!destination) return;
 
+    // If the dragged item is a column
     if (type === "column") {
+      // Create a copy of the current columns
       const newColumns = Array.from(columns);
+      
+      // Remove the column from its original position
       const [reorderedColumn] = newColumns.splice(source.index, 1);
+      
+      // Insert the column into the new position
       newColumns.splice(destination.index, 0, reorderedColumn);
+      
+      // Update the store with the new column order
       useTaskStore.setState({ columns: newColumns });
       return;
     }
 
+    // If the task was dropped in the same position, do nothing
     if (
       destination.droppableId === source.droppableId &&
       destination.index === source.index
@@ -56,6 +71,7 @@ export default function TaskBoard() {
       return;
     }
 
+    // Reorder the tasks within or between columns based on the drag event
     reorderTasks(
       source.droppableId as Status,
       source.index,
@@ -63,6 +79,7 @@ export default function TaskBoard() {
       destination.index
     );
   };
+
 
   const filteredColumns = columns.map((column) => ({
     ...column,
