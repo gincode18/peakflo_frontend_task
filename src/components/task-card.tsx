@@ -1,9 +1,13 @@
 import { Draggable } from "@hello-pangea/dnd";
 import { Link } from "react-router-dom";
 import type { Task } from "../types/task";
-import { Paper, Typography, Chip, Box, useTheme } from "@mui/material";
+import { Paper, Typography, Chip, Box, useTheme, TextField } from "@mui/material";
 import { format, isBefore, addDays } from "date-fns";
 import { CalendarToday, Flag } from "@mui/icons-material";
+import EditIcon from "@mui/icons-material/Edit";
+import { useState ,useRef} from "react";
+import { useTaskStore } from "../store/tasks";
+
 
 interface TaskCardProps {
   task: Task;
@@ -17,8 +21,11 @@ const priorityColors = {
 };
 
 export function TaskCard({ task, index }: TaskCardProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const theme = useTheme();
-
+  const [isEditing, setIsEditing] = useState(false);
+  const [newTitle, setNewTitle] = useState(task.title);
+  const { updateTask } = useTaskStore();
   const getDueDateColor = () => {
     if (!task.dueDate) return theme.palette.text.secondary;
     const today = new Date();
@@ -28,10 +35,30 @@ export function TaskCard({ task, index }: TaskCardProps) {
     return theme.palette.success.main;
   };
 
+  const handleEdit = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setIsEditing(false);
+      if (inputRef.current) {
+        updateTask(task.id, { title: newTitle });
+        setNewTitle(task.title);
+      }
+    }
+  };
+
+  // const handleSave = () => {
+  //   updateTask(task.id, { title: task.title, description: task.description });
+  //   setIsEditing(false);
+  // };
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewTitle(e.target.value);
+  };
+
+
+
   return (
     <Draggable draggableId={task.id} index={index}>
       {(provided, snapshot) => (
-        <Link to={`/task/${task.id}`} style={{ textDecoration: "none" }}>
+        // <Link to={`/task/${task.id}`} style={{ textDecoration: "none" }}>
           <Paper
             ref={provided.innerRef}
             {...provided.draggableProps}
@@ -53,16 +80,39 @@ export function TaskCard({ task, index }: TaskCardProps) {
               gutterBottom
               sx={{ fontWeight: "bold" }}
             >
-              {task.title}
+              {isEditing ? (
+                <TextField
+                  inputRef={inputRef}
+                  value={newTitle}
+                  onChange={onChange}
+                  onKeyDown={handleEdit}
+                  autoFocus
+                />
+              ) : (
+                task.title
+              )}
             </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              noWrap
-              sx={{ mb: 2 }}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
             >
-              {task.description}
-            </Typography>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                noWrap
+                sx={{ mb: 2 }}
+              >
+                {task.description}
+              </Typography>
+              <EditIcon
+                fontSize="small"
+                sx={{ cursor: "pointer" }}
+                onClick={() => setIsEditing(true)}
+              />
+            </Box>
             <Box
               sx={{
                 display: "flex",
@@ -92,7 +142,7 @@ export function TaskCard({ task, index }: TaskCardProps) {
               )}
             </Box>
           </Paper>
-        </Link>
+        // </Link>
       )}
     </Draggable>
   );
